@@ -287,7 +287,13 @@ didFinishCollectingMetrics:(NSURLSessionTaskMetrics *)metrics {
           dataTask:(__unused NSURLSessionDataTask *)dataTask
     didReceiveData:(NSData *)data
 {
-    self.downloadProgress.totalUnitCount = dataTask.countOfBytesExpectedToReceive;
+    int64_t totalBytesExpected = dataTask.countOfBytesExpectedToReceive;
+    if (@available(iOS 11, *)) {
+        if (totalBytesExpected == -1 && dataTask.countOfBytesClientExpectsToReceive > 0) {
+            totalBytesExpected = dataTask.countOfBytesClientExpectsToReceive;
+        }
+    }
+    self.downloadProgress.totalUnitCount = totalBytesExpected;
     self.downloadProgress.completedUnitCount = dataTask.countOfBytesReceived;
 
     [self.mutableData appendData:data];
